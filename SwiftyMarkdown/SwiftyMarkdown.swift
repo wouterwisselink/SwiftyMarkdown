@@ -11,6 +11,7 @@ import UIKit
 
 public protocol FontProperties {
 	var fontName : String? { get set }
+	var fontSize : CGFloat? { get set }
 	var color : UIColor { get set }
 }
 
@@ -22,6 +23,7 @@ If that is not set, then the system default will be used.
 */
 public struct BasicStyles : FontProperties {
 	public var fontName : String? = UIFont.preferredFontForTextStyle(UIFontTextStyleBody).fontName
+	public var fontSize: CGFloat? = 14
 	public var color = UIColor.blackColor()
 }
 
@@ -309,6 +311,7 @@ public class SwiftyMarkdown {
 	func attributedStringFromString(string : String, withStyle style : LineStyle, attributes : [String : AnyObject] = [:] ) -> NSAttributedString {
 		let textStyle : String
 		var fontName : String?
+		var fontSize : CGFloat?
         var attributes = attributes
 
 		// What type are we and is there a font name set?
@@ -317,6 +320,7 @@ public class SwiftyMarkdown {
 		switch currentType {
 		case .H1:
 			fontName = h1.fontName
+			fontSize = h1.fontSize
 			if #available(iOS 9, *) {
 				textStyle = UIFontTextStyleTitle1
 			} else {
@@ -325,6 +329,7 @@ public class SwiftyMarkdown {
 			attributes[NSForegroundColorAttributeName] = h1.color
 		case .H2:
 			fontName = h2.fontName
+			fontSize = h2.fontSize
 			if #available(iOS 9, *) {
 				textStyle = UIFontTextStyleTitle2
 			} else {
@@ -333,6 +338,7 @@ public class SwiftyMarkdown {
 			attributes[NSForegroundColorAttributeName] = h2.color
 		case .H3:
 			fontName = h3.fontName
+			fontSize = h3.fontSize
 			if #available(iOS 9, *) {
 				textStyle = UIFontTextStyleTitle2
 			} else {
@@ -341,18 +347,22 @@ public class SwiftyMarkdown {
 			attributes[NSForegroundColorAttributeName] = h3.color
 		case .H4:
 			fontName = h4.fontName
+			fontSize = h4.fontSize
 			textStyle = UIFontTextStyleHeadline
 			attributes[NSForegroundColorAttributeName] = h4.color
 		case .H5:
 			fontName = h5.fontName
+			fontSize = h4.fontSize
 			textStyle = UIFontTextStyleSubheadline
 			attributes[NSForegroundColorAttributeName] = h5.color
 		case .H6:
 			fontName = h6.fontName
+			fontSize = h6.fontSize
 			textStyle = UIFontTextStyleFootnote
 			attributes[NSForegroundColorAttributeName] = h6.color
 		default:
 			fontName = body.fontName
+			fontSize = body.fontSize
 			textStyle = UIFontTextStyleBody
 			attributes[NSForegroundColorAttributeName] = body.color
 			break
@@ -362,11 +372,13 @@ public class SwiftyMarkdown {
 		
 		if style == .Code {
 			fontName = code.fontName
+			fontSize = code.fontSize
 			attributes[NSForegroundColorAttributeName] = code.color
 		}
 		
 		if style == .Link {
 			fontName = link.fontName
+			fontSize = link.fontSize
 			attributes[NSForegroundColorAttributeName] = link.color
 		}
 		
@@ -379,10 +391,16 @@ public class SwiftyMarkdown {
 		
 		let font = UIFont.preferredFontForTextStyle(textStyle)
 		let styleDescriptor = font.fontDescriptor()
-		let styleSize = styleDescriptor.fontAttributes()[UIFontDescriptorSizeAttribute] as? CGFloat ?? CGFloat(14)
+
+		if let _ = fontSize {
+		} else {
+			fontSize = styleDescriptor.fontAttributes()[UIFontDescriptorSizeAttribute] as? CGFloat ?? CGFloat(14)
+		}
+
+		let styleSize = fontSize
 		
 		var finalFont : UIFont
-		if let finalFontName = fontName, font = UIFont(name: finalFontName, size: styleSize) {
+		if let finalFontName = fontName, font = UIFont(name: finalFontName, size: styleSize!) {
 			finalFont = font
 		} else {
 			finalFont = UIFont.preferredFontForTextStyle(textStyle)
@@ -391,11 +409,11 @@ public class SwiftyMarkdown {
 		let finalFontDescriptor = finalFont.fontDescriptor()
 		if style == .Italic {
 			let italicDescriptor = finalFontDescriptor.fontDescriptorWithSymbolicTraits(.TraitItalic)
-			finalFont = UIFont(descriptor: italicDescriptor, size: styleSize)
+			finalFont = UIFont(descriptor: italicDescriptor, size: styleSize!)
 		}
 		if style == .Bold {
 			let boldDescriptor = finalFontDescriptor.fontDescriptorWithSymbolicTraits(.TraitBold)
-			finalFont = UIFont(descriptor: boldDescriptor, size: styleSize)
+			finalFont = UIFont(descriptor: boldDescriptor, size: styleSize!)
 		}
 		
 		
